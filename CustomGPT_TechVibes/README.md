@@ -5,7 +5,7 @@
 📌 **Author:** Thivya Dhanasegaran  
 📌 **Tool Used:** ChatGPT Plus (GPT-4)  
 📌 **Status:** Live ✅ – [TechVibesGPT](https://chatgpt.com/g/g-679ede730ebc81918f45e1ede521c39b-techvibesgpt)  
-📌 **Video Demo:** [Watch Live Demo]([https://drive.google.com/file/d/1ypgGMeKBXnBHUCCMrDkqwthDV71Yb4pe/view?usp=drive_link](https://drive.google.com/file/d/1nWKXvv7FJCZOCrdDWMvsMUpAKt48qeH5/view?usp=drive_link))
+📌 **Video Demo:** [Watch Live Demo](https://drive.google.com/file/d/1ypgGMeKBXnBHUCCMrDkqwthDV71Yb4pe/view?usp=drive_link](https://drive.google.com/file/d/1nWKXvv7FJCZOCrdDWMvsMUpAKt48qeH5/view?usp=drive_link)
 
 ---
 
