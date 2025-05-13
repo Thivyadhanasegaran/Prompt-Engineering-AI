@@ -1,0 +1,413 @@
+{
+  "name": "Chat-AI Agent-Text-to-Image-Convertor-N8N",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -20
+      ],
+      "id": "d7b99a48-22e2-4269-a720-5a017267d65d",
+      "name": "When chat message received",
+      "webhookId": "0509d82c-eab9-4248-a1bb-83aabf59aaa4"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Act like a image generator. \n\nYour ONLY task is to generate visual image prompts when the user gives a valid visual description.\n\n---\n🛑 If the user input is not a valid visual prompt (e.g., a math question, or unclear), you MUST respond with:\n\n\"🛑 Sorry, I can only generate images based on visual descriptions. Please describe the image you'd like me to create.\"\n\nDo NOT attempt to generate images for non-visual requests like: \"What is 2+2?\" or \"Tell me a joke\".\n\n---\n\nWhen the user give you a image prompt use the \"Image_Generator\" tool to generate image which is connected with you.\n\n\nAfter the \"Image_Generator\" tool work is done then generated image will be the url.\nhttps://pub-10bd3ab40166499bae88e4ad818aefe8.r2.dev/12345.jpg\n\nAfter the \"Image_Generator\" tool work is done if possible then show the image(https://pub-10bd3ab40166499bae88e4ad818aefe8.r2.dev/12345.jpg) and if not only give the url.\n\nStay in character as a **text-to-image agent**. Do not answer unrelated questions. Always redirect back to your main function as responding\n\n🛑 \"Sorry, I can only generate images based on visual descriptions. Please describe the image you'd like me to create.\"\n\n---\n\n\n\n\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        240,
+        -20
+      ],
+      "id": "f8f59d76-33ce-48e5-9e2c-ad04e2ccf23a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.0-flash-exp:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        160,
+        220
+      ],
+      "id": "abafd69c-19a3-4fab-a192-0fcca2abef41",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "bnpMwmE4iRb7PyTA",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        360,
+        220
+      ],
+      "id": "ad204d4e-02e5-4c99-a54f-e889036765ba",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inputs",
+              "value": "={{ $json.finalPrompt }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        20
+      ],
+      "id": "1043312d-fb53-428e-9cf2-cb302fee8448",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "apfmP9N8YlLg7vtM",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "n8n",
+        "fileName": "12345.jpg",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        -200
+      ],
+      "id": "982fc687-6593-4b74-9c9e-66160fb4e7dc",
+      "name": "S3",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "notesInFlow": false,
+      "credentials": {
+        "s3": {
+          "id": "7tFDS89lHHU9CsOX",
+          "name": "S3 account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1m1a-71F_cO7wdUhMRp_ZiF08CchUcHqOITKjCYhc-nY",
+          "mode": "list",
+          "cachedResultName": "AI Image Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m1a-71F_cO7wdUhMRp_ZiF08CchUcHqOITKjCYhc-nY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "AI Image Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m1a-71F_cO7wdUhMRp_ZiF08CchUcHqOITKjCYhc-nY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Prompt       ": "={{ $node[\"Build Final Prompt\"].json[\"finalPrompt\"] }}\n",
+            "File Name": "https://pub-10bd3ab40166499bae88e4ad818aefe8.r2.dev/12345.jpg"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Prompt       ",
+              "displayName": "Prompt       ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "File Name",
+              "displayName": "File Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1420,
+        20
+      ],
+      "id": "9da9c22b-0096-4c51-b05b-ad222bce1039",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "C2PPjSjbJNRK5IaH",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "056bf85a-7668-4de2-b3ce-c23954ee6a63",
+              "name": "output",
+              "value": "={{ $json['File Name'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1620,
+        -140
+      ],
+      "id": "8d335edb-e029-49c4-a372-02b75b77347f",
+      "name": "Final Output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b3e8f35-8bab-4947-a3ea-45db9f91f113",
+              "name": "finalPrompt",
+              "value": "=\"A soft oil painting of {{ $('When chat message received').item.json.chatInput }}, in a hyperrealistic style with warm lighting and soft shadows\"",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        780,
+        100
+      ],
+      "id": "66b95af2-b34f-4039-94fc-fe2d56fa7c95",
+      "name": "Build Final Prompt"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5a48a011-d17a-44cf-8e9f-c5d073328224",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Sorry",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        580,
+        -20
+      ],
+      "id": "2b79a627-2346-4389-9859-c97e146e5082",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a9bc0a5e-e2dd-400e-9a1c-704fa7297aae",
+              "name": "output",
+              "value": "={{ $('AI Agent').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        760,
+        -180
+      ],
+      "id": "6b11d761-9ca6-4cb2-8f9c-6379cc13b45e",
+      "name": "Set Error Message"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "S3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "S3": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Final Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Final Prompt": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Final Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Output": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f94cd89e-5947-4494-ae20-4939e27dc3ce",
+  "meta": {
+    "instanceId": "9da1cd1f522f2229f25e48a555ccdead317ca622466df2ee30a0294bbe28bbe3"
+  },
+  "id": "HYa0tzQhPWN4MC4I",
+  "tags": []
+}
